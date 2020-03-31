@@ -668,6 +668,7 @@ def transform_config(
     compression_type=None,
     split_type=None,
     job_name=None,
+    data_processing=None,
 ):
     """Export Airflow transform config from a SageMaker transformer
 
@@ -690,6 +691,7 @@ def transform_config(
             'None'). Valid values: 'None', 'Line', 'RecordIO', and 'TFRecord'.
         job_name (str): job name (default: None). If not specified, one will be
             generated.
+        data_processing (dict): data_processing config dict with 'input_filter', 'join_source' and 'output_filter'
 
     Returns:
         dict: Transform config that can be directly used by
@@ -734,6 +736,20 @@ def transform_config(
 
     if transformer.tags is not None:
         config["Tags"] = transformer.tags
+
+    if data_processing is not None:
+        if (
+            data_processing.get("input_filter") is None
+            or data_processing.get("join_source") is None
+            or data_processing.get("output_filter") is None
+        ):
+            raise ValueError(
+                "data_processing must be a dictionary with values for input_filter, join_source and output_filter"
+            )
+        config["DataProcessing"] = {}
+        config["DataProcessing"]["InputFilter"] = data_processing.get("input_filter")
+        config["DataProcessing"]["JoinSource"] = data_processing.get("join_source")
+        config["DataProcessing"]["OutputFilter"] = data_processing.get("output_filter")
 
     return config
 
